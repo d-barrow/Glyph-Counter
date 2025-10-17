@@ -1,0 +1,466 @@
+<style>
+    /* COLOR SCHEME CONFIGURATION */
+    #glyph-counter-app {
+        --color-missing: #ffcccc;
+        --color-abundant: #cce5ff;
+        --color-very-abundant: #ccffcc;
+        --color-primary: #2c3e50;
+        --color-secondary: #34495e;
+        --color-accent: #3498db;
+        --color-bg: #f8f9fa;
+        --color-text: #2c3e50;
+        --shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    #glyph-counter-app * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    #glyph-counter-app {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        color: var(--color-text);
+        border-radius: 16px;
+        margin: 2rem 0;
+    }
+    
+    #glyph-counter-app .gc-container {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+    }
+    
+    #glyph-counter-app .gc-header {
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    #glyph-counter-app .gc-header h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+    
+    #glyph-counter-app .gc-header p {
+        opacity: 0.9;
+        font-size: 1rem;
+    }
+    
+    #glyph-counter-app .gc-content {
+        padding: 2rem;
+    }
+    
+    #glyph-counter-app .gc-input-section {
+        margin-bottom: 2rem;
+    }
+    
+    #glyph-counter-app label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--color-primary);
+    }
+    
+    #glyph-counter-app textarea {
+        width: 100%;
+        min-height: 150px;
+        padding: 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-family: inherit;
+        resize: vertical;
+        transition: border-color 0.3s;
+    }
+    
+    #glyph-counter-app textarea:focus {
+        outline: none;
+        border-color: var(--color-accent);
+    }
+    
+    #glyph-counter-app .gc-button-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    #glyph-counter-app button {
+        flex: 1;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: var(--shadow);
+    }
+    
+    #glyph-counter-app .gc-btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    #glyph-counter-app .gc-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    #glyph-counter-app .gc-btn-secondary {
+        background: #e0e0e0;
+        color: var(--color-text);
+    }
+    
+    #glyph-counter-app .gc-btn-secondary:hover {
+        background: #d0d0d0;
+    }
+    
+    #glyph-counter-app .gc-results {
+        margin-top: 2rem;
+    }
+    
+    #glyph-counter-app .gc-category {
+        margin-bottom: 2rem;
+    }
+    
+    #glyph-counter-app .gc-category-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 3px solid var(--color-accent);
+    }
+    
+    #glyph-counter-app .gc-glyphs {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    #glyph-counter-app .gc-glyph {
+        border-radius: 6px;
+        font-size: 0.95rem;
+        border: 2px solid #f0f0f0;
+        transition: transform 0.2s;
+        overflow: hidden;
+    }
+    
+    #glyph-counter-app .gc-glyph-def { padding: 0.5rem; text-align: center; font-size: 0.9rem; border-bottom: 2px solid #f0f0f0; }
+    #glyph-counter-app .gc-glyph-count { padding: 1rem 0.75rem; text-align: center; font-size: 1.1rem; }
+    
+    #glyph-counter-app .gc-glyph.missing .gc-glyph-count { background-color: var(--color-missing); }
+    #glyph-counter-app .gc-glyph.abundant .gc-glyph-count { background-color: var(--color-abundant); }
+    #glyph-counter-app .gc-glyph.very-abundant .gc-glyph-count { background-color: var(--color-very-abundant); }
+    
+    #glyph-counter-app .gc-glyph-group { border: 2px solid #f0f0f0; border-radius: 6px; overflow: hidden; }
+    #glyph-counter-app .gc-glyph-group-header { padding: 0.5rem; text-align: center; font-size: 1rem; border-bottom: 2px solid #f0f0f0; background: #f8f9fa; }
+    #glyph-counter-app .gc-glyph-sub { display: flex; justify-content: space-between; padding: 0.5rem 0.5rem; font-size: 0.85rem; border-bottom: 1px solid #f0f0f0; }
+    #glyph-counter-app .gc-glyph-sub:last-child { border-bottom: none; }
+    
+    #glyph-counter-app .gc-glyph:hover {
+        transform: scale(1.05);
+    }
+    
+    #glyph-counter-app .gc-glyph-sub.missing { background-color: var(--color-missing); }
+    #glyph-counter-app .gc-glyph-sub.abundant { background-color: var(--color-abundant); }
+    #glyph-counter-app .gc-glyph-sub.very-abundant { background-color: var(--color-very-abundant); }
+    
+    #glyph-counter-app .gc-legend {
+        display: flex;
+        gap: 2rem;
+        padding: 1.5rem;
+        background: var(--color-bg);
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    #glyph-counter-app .gc-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    #glyph-counter-app .gc-legend-color {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        border: 2px solid #ddd;
+    }
+    
+    @media print {
+        #glyph-counter-app { background: white; padding: 0; }
+        #glyph-counter-app .gc-container { box-shadow: none; }
+        #glyph-counter-app .gc-input-section, #glyph-counter-app .gc-button-group { display: none; }
+        #glyph-counter-app .gc-header { background: white; color: var(--color-primary); page-break-after: avoid; }
+        #glyph-counter-app .gc-category { page-break-inside: avoid; }
+        #glyph-counter-app .gc-glyph, #glyph-counter-app .gc-glyph-group { page-break-inside: avoid; }
+        #glyph-counter-app .gc-glyph.missing .gc-glyph-count, #glyph-counter-app .gc-glyph-sub.missing { background-color: var(--color-missing) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #glyph-counter-app .gc-glyph.abundant .gc-glyph-count, #glyph-counter-app .gc-glyph-sub.abundant { background-color: var(--color-abundant) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #glyph-counter-app .gc-glyph.very-abundant .gc-glyph-count, #glyph-counter-app .gc-glyph-sub.very-abundant { background-color: var(--color-very-abundant) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+    
+    @media (max-width: 768px) {
+        #glyph-counter-app { padding: 1rem; }
+        #glyph-counter-app .gc-content { padding: 1rem; }
+        #glyph-counter-app .gc-header h1 { font-size: 1.5rem; }
+        #glyph-counter-app .gc-glyphs { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+        #glyph-counter-app .gc-legend { gap: 1rem; }
+    }
+</style>
+
+<div id="glyph-counter-app">
+    <div class="gc-container">
+        <div class="gc-header">
+            <h1>Letter & Glyph Counter</h1>
+            <p>Analyze handwritten transcripts for typeface design</p>
+        </div>
+        
+        <div class="gc-content">
+            <div class="gc-input-section">
+                <label for="gc-transcript">Paste your transcript:</label>
+                <textarea id="gc-transcript" placeholder="Enter or paste your text here..."></textarea>
+                <div class="gc-button-group">
+                    <button class="gc-btn-primary" id="gc-countBtn">Count Glyphs</button>
+                    <button class="gc-btn-secondary" id="gc-clearBtn">Clear</button>
+                </div>
+            </div>
+            
+            <div id="gc-output"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Wait for elements to exist
+    function initGlyphCounter() {
+        var countBtn = document.getElementById('gc-countBtn');
+        var clearBtn = document.getElementById('gc-clearBtn');
+        
+        if (!countBtn || !clearBtn) {
+            // Elements not ready, try again in 100ms
+            setTimeout(initGlyphCounter, 100);
+            return;
+        }
+        
+        // COLOR THRESHOLD CONFIGURATION
+        var THRESHOLDS = {
+            missing: 0,
+            abundant: 6,
+            veryAbundant: 10
+        };
+
+        // CHARACTER CONFIGURATION
+        var CHARACTERS = {
+            uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+            lowercase: 'abcdefghijklmnopqrstuvwxyz'.split(''),
+            digits: '0123456789'.split(''),
+            punctuation: ['.', ',', ';', ':', '!', '?', "'", '"', '`', '-', '–', '—', '…'],
+            brackets: ['(', ')', '[', ']', '{', '}'],
+            math: ['+', '-', '×', '÷', '=', '±', '%', '‰', '°', '#', '@', '&', '*', '/', '\\'],
+            currency: ['$', '€', '£', '¥', '¢'],
+            quotes: ['"', '"', "'", "'", '«', '»', '‹', '›'],
+            special: ['©', '®', '™', '§', '¶', '†', '‡', '•', '·']
+        };
+
+        function countGlyphs() {
+            var text = document.getElementById('gc-transcript').value;
+            if (!text.trim()) {
+                alert('Please enter some text to analyze.');
+                return;
+            }
+
+            var words = text.split(/\s+/);
+            var counts = {};
+            var allChars = new Set();
+
+            Object.values(CHARACTERS).flat().forEach(function(char) {
+                counts[char] = 0;
+                if (CHARACTERS.lowercase.includes(char)) {
+                    counts[char + '.mid'] = 0;
+                    counts[char + '.init'] = 0;
+                    counts[char + '.fina'] = 0;
+                    counts[char + '.isol'] = 0;
+                }
+                if (CHARACTERS.uppercase.includes(char)) {
+                    counts[char + '.isol'] = 0;
+                }
+            });
+
+            for (var i = 0; i < text.length; i++) {
+                allChars.add(text[i]);
+            }
+
+            words.forEach(function(word) {
+                var cleanWord = word.replace(/[^a-zA-Z]/g, '');
+                if (cleanWord.length === 1) {
+                    var char = cleanWord[0];
+                    if (CHARACTERS.lowercase.includes(char)) counts[char + '.isol']++;
+                    if (CHARACTERS.uppercase.includes(char)) counts[char + '.isol']++;
+                }
+                for (var i = 0; i < cleanWord.length; i++) {
+                    var char = cleanWord[i];
+                    if (CHARACTERS.lowercase.includes(char)) {
+                        if (cleanWord.length === 1) continue;
+                        if (i === 0) counts[char + '.init']++;
+                        else if (i === cleanWord.length - 1) counts[char + '.fina']++;
+                        else counts[char + '.mid']++;
+                    }
+                }
+            });
+
+            for (var i = 0; i < text.length; i++) {
+                var char = text[i];
+                if (counts.hasOwnProperty(char)) {
+                    if (!CHARACTERS.lowercase.includes(char)) {
+                        counts[char]++;
+                    }
+                }
+            }
+
+            displayResults(counts, allChars, text);
+        }
+
+        function displayResults(counts, allChars, text) {
+            var output = document.getElementById('gc-output');
+            
+            var html = '<div class="gc-results">';
+            html += '<div class="gc-legend">';
+            html += '<div class="gc-legend-item"><div class="gc-legend-color" style="background:var(--color-missing)"></div><span>Missing (0)</span></div>';
+            html += '<div class="gc-legend-item"><div class="gc-legend-color" style="background:var(--color-abundant)"></div><span>Abundant (6-10)</span></div>';
+            html += '<div class="gc-legend-item"><div class="gc-legend-color" style="background:var(--color-very-abundant)"></div><span>Very Abundant (10+)</span></div>';
+            html += '</div>';
+
+            html += '<div class="gc-category"><h2 class="gc-category-title">Uppercase Letters</h2><div class="gc-glyphs">';
+            CHARACTERS.uppercase.forEach(function(char) {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            html += '<div class="gc-category"><h2 class="gc-category-title">Lowercase Letters</h2><div class="gc-glyphs">';
+            CHARACTERS.lowercase.forEach(function(char) {
+                html += '<div class="gc-glyph-group">';
+                html += '<div class="gc-glyph-group-header">' + char + '</div>';
+                html += createGlyphSub('init', counts[char + '.init']);
+                html += createGlyphSub('mid', counts[char + '.mid']);
+                html += createGlyphSub('fina', counts[char + '.fina']);
+                html += '</div>';
+            });
+            html += '</div></div>';
+
+            html += '<div class="gc-category"><h2 class="gc-category-title">Digits</h2><div class="gc-glyphs">';
+            CHARACTERS.digits.forEach(function(char) {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            html += '<div class="gc-category"><h2 class="gc-category-title">Punctuation</h2><div class="gc-glyphs">';
+            CHARACTERS.punctuation.forEach(function(char) {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            html += '<div class="gc-category"><h2 class="gc-category-title">Brackets</h2><div class="gc-glyphs">';
+            CHARACTERS.brackets.forEach(function(char) {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            html += '<div class="gc-category"><h2 class="gc-category-title">Math & Symbols</h2><div class="gc-glyphs">';
+            CHARACTERS.math.forEach(function(char) {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            html += '<div class="gc-category"><h2 class="gc-category-title">Currency</h2><div class="gc-glyphs">';
+            CHARACTERS.currency.forEach(function(char) {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            html += '<div class="gc-category"><h2 class="gc-category-title">Quotes</h2><div class="gc-glyphs">';
+            CHARACTERS.quotes.forEach(function(char) {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            var isolatedChars = [];
+            CHARACTERS.uppercase.forEach(function(char) {
+                if (counts[char + '.isol'] > 0) isolatedChars.push({ char: char + '.isol', count: counts[char + '.isol'] });
+            });
+            CHARACTERS.lowercase.forEach(function(char) {
+                if (counts[char + '.isol'] > 0) isolatedChars.push({ char: char + '.isol', count: counts[char + '.isol'] });
+            });
+            if (isolatedChars.length > 0) {
+                html += '<div class="gc-category"><h2 class="gc-category-title">Isolated Letters</h2><div class="gc-glyphs">';
+                isolatedChars.forEach(function(item) {
+                    html += createGlyphDiv(item.char, item.count);
+                });
+                html += '</div></div>';
+            }
+
+            var knownChars = new Set(Object.values(CHARACTERS).flat());
+            var otherGlyphs = [];
+            allChars.forEach(function(char) {
+                var isKnown = knownChars.has(char);
+                var isNotEmpty = char.trim() !== '';
+                if (!isKnown) {
+                    if (isNotEmpty) {
+                        var charCount = (text.match(new RegExp(char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+                        otherGlyphs.push({ char: char, count: charCount });
+                    }
+                }
+            });
+            if (otherGlyphs.length > 0) {
+                otherGlyphs.sort(function(a, b) { return b.count - a.count; });
+                html += '<div class="gc-category"><h2 class="gc-category-title">Other Glyphs</h2><div class="gc-glyphs">';
+                otherGlyphs.forEach(function(item) {
+                    html += createGlyphDiv(item.char, item.count);
+                });
+                html += '</div></div>';
+            }
+
+            html += '</div>';
+            output.innerHTML = html;
+        }
+
+        function createGlyphDiv(char, count) {
+            var colorClass = count === THRESHOLDS.missing ? 'missing' :
+                         count >= THRESHOLDS.veryAbundant ? 'very-abundant' :
+                         count >= THRESHOLDS.abundant ? 'abundant' : '';
+            
+            return '<div class="gc-glyph ' + colorClass + '"><div class="gc-glyph-def">' + char + '</div><div class="gc-glyph-count"><b>' + count + '</b></div></div>';
+        }
+
+        function createGlyphSub(label, count) {
+            var colorClass = count === THRESHOLDS.missing ? 'missing' :
+                         count >= THRESHOLDS.veryAbundant ? 'very-abundant' :
+                         count >= THRESHOLDS.abundant ? 'abundant' : '';
+            
+            return '<div class="gc-glyph-sub ' + colorClass + '"><span>' + label + '</span><span><b>' + count + '</b></span></div>';
+        }
+
+        function clearAll() {
+            document.getElementById('gc-transcript').value = '';
+            document.getElementById('gc-output').innerHTML = '';
+        }
+
+        // Attach event listeners
+        countBtn.addEventListener('click', countGlyphs);
+        clearBtn.addEventListener('click', clearAll);
+    }
+    
+    // Start initialization
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initGlyphCounter);
+    } else {
+        initGlyphCounter();
+    }
+})();
+</script>

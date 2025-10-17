@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letter & Glyph Counter for Handwritten Transcripts</title>
+    <style>
+        /* COLOR SCHEME CONFIGURATION */
+        :root {
+            --color-missing: #ffcccc;
+            --color-abundant: #cce5ff;
+            --color-very-abundant: #ccffcc;
+            --color-primary: #2c3e50;
+            --color-secondary: #34495e;
+            --color-accent: #3498db;
+            --color-bg: #f8f9fa;
+            --color-text: #2c3e50;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: var(--color-text);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+        
+        .content {
+            padding: 2rem;
+        }
+        
+        .input-section {
+            margin-bottom: 2rem;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-primary);
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        button {
+            flex: 1;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: var(--color-text);
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .results {
+            margin-top: 2rem;
+        }
+        
+        .category {
+            margin-bottom: 2rem;
+        }
+        
+        .category-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid var(--color-accent);
+        }
+        
+        .glyphs {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .glyph {
+            border-radius: 6px;
+            font-size: 0.95rem;
+            border: 2px solid #f0f0f0;
+            transition: transform 0.2s;
+            overflow: hidden;
+        }
+        
+        .glyph-def { padding: 0.5rem; text-align: center; font-size: 0.9rem; border-bottom: 2px solid #f0f0f0; }
+        .glyph-count { padding: 1rem 0.75rem; text-align: center; font-size: 1.1rem; }
+        
+        .glyph.missing .glyph-count { background-color: var(--color-missing); }
+        .glyph.abundant .glyph-count { background-color: var(--color-abundant); }
+        .glyph.very-abundant .glyph-count { background-color: var(--color-very-abundant); }
+        
+        .glyph-group { border: 2px solid #f0f0f0; border-radius: 6px; overflow: hidden; }
+        .glyph-group-header { padding: 0.5rem; text-align: center; font-size: 1rem; border-bottom: 2px solid #f0f0f0; background: #f8f9fa; }
+        .glyph-sub { display: flex; justify-content: space-between; padding: 0.5rem 0.5rem; font-size: 0.85rem; border-bottom: 1px solid #f0f0f0; }
+        .glyph-sub:last-child { border-bottom: none; }
+        
+        .glyph:hover {
+            transform: scale(1.05);
+        }
+        
+        .glyph-sub.missing { background-color: var(--color-missing); }
+        .glyph-sub.abundant { background-color: var(--color-abundant); }
+        .glyph-sub.very-abundant { background-color: var(--color-very-abundant); }
+        
+        .legend {
+            display: flex;
+            gap: 2rem;
+            padding: 1.5rem;
+            background: var(--color-bg);
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+        }
+        
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; }
+            .input-section, .button-group { display: none; }
+            header { background: white; color: var(--color-primary); page-break-after: avoid; }
+            .category { page-break-inside: avoid; }
+            .glyph, .glyph-group { page-break-inside: avoid; }
+            .glyph.missing .glyph-count, .glyph-sub.missing { background-color: var(--color-missing) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .glyph.abundant .glyph-count, .glyph-sub.abundant { background-color: var(--color-abundant) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .glyph.very-abundant .glyph-count, .glyph-sub.very-abundant { background-color: var(--color-very-abundant) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .content { padding: 1rem; }
+            header h1 { font-size: 1.5rem; }
+            .glyphs { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); }
+            .legend { gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Letter & Glyph Counter</h1>
+            <p>Analyze handwritten transcripts for typeface design</p>
+        </header>
+        
+        <div class="content">
+            <div class="input-section">
+                <label for="transcript">Paste your transcript:</label>
+                <textarea id="transcript" placeholder="Enter or paste your text here..."></textarea>
+                <div class="button-group">
+                    <button class="btn-primary" id="countBtn">Count Glyphs</button>
+                    <button class="btn-secondary" id="clearBtn">Clear</button>
+                </div>
+            </div>
+            
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <script>
+        // COLOR THRESHOLD CONFIGURATION
+        // Modify these values to change when colors appear
+        const THRESHOLDS = {
+            missing: 0,      // Red: Change to highlight different "missing" definition
+            abundant: 6,     // Blue: Change minimum for "abundant" classification
+            veryAbundant: 10 // Green: Change minimum for "very abundant" classification
+        };
+
+        // CHARACTER CONFIGURATION
+        // Add or modify character categories here
+        const CHARACTERS = {
+            uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+            lowercase: 'abcdefghijklmnopqrstuvwxyz'.split(''),
+            digits: '0123456789'.split(''),
+            punctuation: ['.', ',', ';', ':', '!', '?', "'", '"', '`', '-', '–', '—', '…'],
+            brackets: ['(', ')', '[', ']', '{', '}'],
+            math: ['+', '-', '×', '÷', '=', '±', '%', '‰', '°', '#', '@', '&', '*', '/', '\\'],
+            currency: ['$', '€', '£', '¥', '¢'],
+            quotes: ['"', '"', "'", "'", '«', '»', '‹', '›'],
+            special: ['©', '®', '™', '§', '¶', '†', '‡', '•', '·']
+        };
+
+        function countGlyphs() {
+            const text = document.getElementById('transcript').value;
+            if (!text.trim()) {
+                alert('Please enter some text to analyze.');
+                return;
+            }
+
+            const words = text.split(/\s+/);
+            const counts = {};
+            const allChars = new Set();
+
+            // Initialize all characters with 0 count
+            Object.values(CHARACTERS).flat().forEach(char => {
+                counts[char] = 0;
+                if (CHARACTERS.lowercase.includes(char)) {
+                    counts[char + '.mid'] = 0;
+                    counts[char + '.init'] = 0;
+                    counts[char + '.fina'] = 0;
+                    counts[char + '.isol'] = 0;
+                }
+                if (CHARACTERS.uppercase.includes(char)) {
+                    counts[char + '.isol'] = 0;
+                }
+            });
+
+            // Collect all unique characters from text
+            for (const char of text) {
+                allChars.add(char);
+            }
+
+            // Count positional variants for lowercase
+            words.forEach(word => {
+                const cleanWord = word.replace(/[^a-zA-Z]/g, '');
+                if (cleanWord.length === 1) {
+                    const char = cleanWord[0];
+                    if (CHARACTERS.lowercase.includes(char)) counts[char + '.isol']++;
+                    if (CHARACTERS.uppercase.includes(char)) counts[char + '.isol']++;
+                }
+                for (let i = 0; i < cleanWord.length; i++) {
+                    const char = cleanWord[i];
+                    if (CHARACTERS.lowercase.includes(char)) {
+                        if (cleanWord.length === 1) continue;
+                        if (i === 0) counts[char + '.init']++;
+                        else if (i === cleanWord.length - 1) counts[char + '.fina']++;
+                        else counts[char + '.mid']++;
+                    }
+                }
+            });
+
+            // Count non-lowercase characters
+            for (const char of text) {
+                if (counts.hasOwnProperty(char) && !CHARACTERS.lowercase.includes(char)) {
+                    counts[char]++;
+                }
+            }
+
+            displayResults(counts, allChars, text);
+        }
+
+        function displayResults(counts, allChars, text) {
+            const output = document.getElementById('output');
+            
+            let html = '<div class="results">';
+            html += '<div class="legend">';
+            html += '<div class="legend-item"><div class="legend-color" style="background:var(--color-missing)"></div><span>Missing (0)</span></div>';
+            html += '<div class="legend-item"><div class="legend-color" style="background:var(--color-abundant)"></div><span>Abundant (6-10)</span></div>';
+            html += '<div class="legend-item"><div class="legend-color" style="background:var(--color-very-abundant)"></div><span>Very Abundant (10+)</span></div>';
+            html += '</div>';
+
+            // Uppercase
+            html += '<div class="category"><h2 class="category-title">Uppercase Letters</h2><div class="glyphs">';
+            CHARACTERS.uppercase.forEach(char => {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            // Lowercase with variants
+            html += '<div class="category"><h2 class="category-title">Lowercase Letters</h2><div class="glyphs">';
+            CHARACTERS.lowercase.forEach(char => {
+                html += '<div class="glyph-group">';
+                html += `<div class="glyph-group-header">${char}</div>`;
+                html += createGlyphSub('init', counts[char + '.init']);
+                html += createGlyphSub('mid', counts[char + '.mid']);
+                html += createGlyphSub('fina', counts[char + '.fina']);
+                html += '</div>';
+            });
+            html += '</div></div>';
+
+            // Digits
+            html += '<div class="category"><h2 class="category-title">Digits</h2><div class="glyphs">';
+            CHARACTERS.digits.forEach(char => {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            // Punctuation
+            html += '<div class="category"><h2 class="category-title">Punctuation</h2><div class="glyphs">';
+            CHARACTERS.punctuation.forEach(char => {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            // Brackets
+            html += '<div class="category"><h2 class="category-title">Brackets</h2><div class="glyphs">';
+            CHARACTERS.brackets.forEach(char => {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            // Math & Symbols
+            html += '<div class="category"><h2 class="category-title">Math & Symbols</h2><div class="glyphs">';
+            CHARACTERS.math.forEach(char => {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            // Currency
+            html += '<div class="category"><h2 class="category-title">Currency</h2><div class="glyphs">';
+            CHARACTERS.currency.forEach(char => {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            // Quotes
+            html += '<div class="category"><h2 class="category-title">Quotes</h2><div class="glyphs">';
+            CHARACTERS.quotes.forEach(char => {
+                html += createGlyphDiv(char, counts[char]);
+            });
+            html += '</div></div>';
+
+            // Isolated Letters (only show if count > 0)
+            const isolatedChars = [];
+            CHARACTERS.uppercase.forEach(char => {
+                if (counts[char + '.isol'] > 0) isolatedChars.push({ char: char + '.isol', count: counts[char + '.isol'] });
+            });
+            CHARACTERS.lowercase.forEach(char => {
+                if (counts[char + '.isol'] > 0) isolatedChars.push({ char: char + '.isol', count: counts[char + '.isol'] });
+            });
+            if (isolatedChars.length > 0) {
+                html += '<div class="category"><h2 class="category-title">Isolated Letters</h2><div class="glyphs">';
+                isolatedChars.forEach(item => {
+                    html += createGlyphDiv(item.char, item.count);
+                });
+                html += '</div></div>';
+            }
+
+            // Other Glyphs (not in predefined categories)
+            const knownChars = new Set(Object.values(CHARACTERS).flat());
+            const otherGlyphs = [];
+            allChars.forEach(char => {
+                if (!knownChars.has(char) && char.trim() !== '') {
+                    const charCount = (text.match(new RegExp(char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
+                    otherGlyphs.push({ char, count: charCount });
+                }
+            });
+            if (otherGlyphs.length > 0) {
+                otherGlyphs.sort((a, b) => b.count - a.count);
+                html += '<div class="category"><h2 class="category-title">Other Glyphs</h2><div class="glyphs">';
+                otherGlyphs.forEach(item => {
+                    html += createGlyphDiv(item.char, item.count);
+                });
+                html += '</div></div>';
+            }
+
+            html += '</div>';
+            output.innerHTML = html;
+        }
+
+        function createGlyphDiv(char, count) {
+            const colorClass = count === THRESHOLDS.missing ? 'missing' :
+                             count >= THRESHOLDS.veryAbundant ? 'very-abundant' :
+                             count >= THRESHOLDS.abundant ? 'abundant' : '';
+            
+            return `<div class="glyph ${colorClass}"><div class="glyph-def">${char}</div><div class="glyph-count"><b>${count}</b></div></div>`;
+        }
+
+        function createGlyphSub(label, count) {
+            const colorClass = count === THRESHOLDS.missing ? 'missing' :
+                             count >= THRESHOLDS.veryAbundant ? 'very-abundant' :
+                             count >= THRESHOLDS.abundant ? 'abundant' : '';
+            
+            return `<div class="glyph-sub ${colorClass}"><span>${label}</span><span><b>${count}</b></span></div>`;
+        }
+
+        function clearAll() {
+            document.getElementById('transcript').value = '';
+            document.getElementById('output').innerHTML = '';
+        }
+
+        // Attach event listeners after DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('countBtn').addEventListener('click', countGlyphs);
+            document.getElementById('clearBtn').addEventListener('click', clearAll);
+        });
+    </script>
+</body>
+</html>
