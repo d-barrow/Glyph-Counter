@@ -2,6 +2,9 @@
 
 A tool to analyze transcripts of handwritten manuscripts and identify which letters and glyphs are present in transcripts.
 
+<img src="Screenshot-1.png" alt="Screenshot" width="48%"/>
+<img src="Screenshot-2.png" alt="Screenshot" width="48%"/>
+
 ## Purpose
 
 When creating typefaces from (transcribed)  handwriting samples, this tool helps to:
