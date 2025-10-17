@@ -4,7 +4,7 @@ A tool to analyze transcripts of handwritten manuscripts and identify which lett
 
 ## Purpose
 
-When creating typefaces from (transcribed)  handwriting samples, this tool helps you:
+When creating typefaces from (transcribed)  handwriting samples, this tool helps to:
 - Count occurrences of each letter, number, and special character
 - Identify missing glyphs (highlighted in red)
 - Locate positional letter variants (initial, medial, and final forms)
