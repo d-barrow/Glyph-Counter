@@ -1,4 +1,4 @@
-# Letter & Glyph Counter for Handwritten Transcripts
+# Glyph Counter for Transcripts
 
 A tool to analyze transcripts of handwritten manuscripts and identify which letters and glyphs are present in transcripts.
 
